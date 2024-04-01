@@ -7,8 +7,7 @@ function(EnableGlobalWarnings)
 
     # Get the warning level we want to enable
     GetWarningLevel(WARNING_LEVEL OFF)
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${WARNING_LEVEL} CACHE STRING "" FORCE)
-
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${WARNING_LEVEL} CACHE STRING "")
 endfunction()
 
 
@@ -16,8 +15,13 @@ function(EnableGlobalWarningsAsErrors)
 
     # Get the warning level we want to enable
     GetWarningLevel(WARNING_LEVEL ON)
-    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${WARNING_LEVEL} CACHE STRING "" FORCE)
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${WARNING_LEVEL} CACHE STRING "")
+endfunction()
 
+
+function(GetWarningLevelAsErrors WARNING_LEVEL)
+    GetWarningLevel(WARNING_LEVEL_AS_ERRORS ON)
+    set(${WARNING_LEVEL} ${WARNING_LEVEL_AS_ERRORS} PARENT_SCOPE)
 endfunction()
 
 function(GetWarningLevel WARNING_LEVEL WARNINGS_AS_ERRORS)
@@ -82,14 +86,19 @@ function(GetWarningLevel WARNING_LEVEL WARNINGS_AS_ERRORS)
         list(APPEND MSVC_WARNINGS /WX)
     endif()
 
+    # Up until now the list is delimited with semicolons: a1;a2;a3;...
+    # Replace them by spaces: a1 a2 a3 ...
+    list(JOIN CLANG_WARNINGS " " CLANG_WARNINGS)
+    list(JOIN GCC_WARNINGS " " GCC_WARNINGS)
+    list(JOIN MSVC_WARNINGS " " MSVC_WARNINGS)
 
     # Set result and raise to parent scope
     if(MSVC)
-        set(WARNING_LEVEL ${MSVC_WARNINGS} PARENT_SCOPE)
+        set(${WARNING_LEVEL} ${MSVC_WARNINGS} PARENT_SCOPE)
     elseif(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-        set(WARNING_LEVEL ${CLANG_WARNINGS} PARENT_SCOPE)
+        set(${WARNING_LEVEL} ${CLANG_WARNINGS} PARENT_SCOPE)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(WARNING_LEVEL ${GCC_WARNINGS} PARENT_SCOPE)
+        set(${WARNING_LEVEL} ${GCC_WARNINGS} PARENT_SCOPE)
     endif()
 
 endfunction()
